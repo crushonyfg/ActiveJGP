@@ -79,8 +79,8 @@ def run_main_simulation(d, N, Nt, Nc, S, outputfile):
             y_AL[k] = np.vstack([y_AL[k].reshape(-1,1), yc_s[ia[ib], :].reshape(-1,1)])
 
             # Calculate errors and metrics
-            diff = pred_value - yt
-            v = pred_var_value
+            diff = pred_value.ravel() - yt.ravel()
+            v = pred_var_value.ravel()
             mse[s, k] = np.mean(diff ** 2)
             rmse[s, k] = np.mean(np.abs(diff))
             nlpd[s, k] = 0.5 * np.mean(diff ** 2 / v + np.log(2 * np.pi * v))

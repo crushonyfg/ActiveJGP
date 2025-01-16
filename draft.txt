@@ -25,6 +25,12 @@ git log --oneline --graph
 git fetch origin
 git branch -r
 
+git commit -m "Resolve merge conflict"
+
+git gc #清理不必要的历史数据
+
+git rev-parse --show-toplevel #显示当前 Git 仓库的根目录。
+
 
 
 

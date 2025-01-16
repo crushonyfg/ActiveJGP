@@ -16,7 +16,7 @@ def standardGP(x, y, xt, logtheta=None, nIter=50):
     cv = [covSum, [covSEard, covNoise]]
     d = x.shape[1]
     logtheta0 = np.zeros(d + 2)
-    logtheta0[-1] = 1  # clean data for ground truth
+    logtheta0[-1] = -1  # clean data for ground truth
 
     # Optimize logtheta if not provided
     if logtheta is None:
