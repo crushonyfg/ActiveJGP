@@ -34,7 +34,7 @@ pip install -r requirements.txt
 ```python
 from JumpGP_code_py.JumpGP_LD import JumpGP_LD
 
-mu_t, sig2_t, model, h = JumpGP_LD(x_j, y_j, xt_j, 'CEM', 0, args[0])
+mu_t, sig2_t, model, h = JumpGP_LD(x, y, xt, 'CEM', True)
 ```
 
 ### Figures 3, 4, 5, 6
