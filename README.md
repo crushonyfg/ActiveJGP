@@ -32,26 +32,18 @@ pip install -r requirements.txt
 `JumpGP_code_py.JumpGP_LD` is the main class implementing the Jump Gaussian Process model. You can use it as follows:
 
 ```python
-from JumpGP_code_py import JumpGP_LD
+from JumpGP_code_py.JumpGP_LD import JumpGP_LD
 
-# Create an instance of the model
-model = JumpGP_LD()
-
-# Fit the model
-model.fit(X_train, y_train)
-
-# Make predictions
-predictions = model.predict(X_test)
+mu_t, sig2_t, model, h = JumpGP_LD(x_j, y_j, xt_j, 'CEM', 0, args[0])
 ```
 
-### Figures 3, 4, 5
+### Figures 3, 4, 5, 6
 
-Figures 3, 4, and 5 illustrate the model's performance on different datasets. You can find the code to generate these figures in the `figures` folder. Running the corresponding scripts will produce visual results to help you understand the model's effectiveness.
+Figures 3, 4, 5, and 6 illustrate the model's performance on different datasets. The code to reproduce these figures can be found in the `Figure_3_4_5_6.py` script. Running this script will generate visual results that help you understand the model's effectiveness as presented in the paper "Jump Gaussian Process Model for Estimating Piecewise Continuous Regression Functions."
 
 ## Important Files
 
 - `JumpGP_code_py/`: Contains the code implementing the Jump Gaussian Process model.
-- `figures/`: Contains the code for generating the figures presented in the papers.
 - `requirements.txt`: Lists all the dependencies required for the project.
 
 ## Contributing
