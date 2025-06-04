@@ -14,22 +14,22 @@ def maxmin_design(N, d, X=None):
     Returns:
     numpy.ndarray: Array of generated points with shape (N, d)
     """
-    if X is None or len(X) == 0:
-        X = np.random.rand(1, d)
-    else:
-        X = np.array(X)
-
-    for n in range(N - len(X)):
-        # Generate candidate points and calculate distances to existing points
-        candidates = np.random.rand(N, d)
-        D = cdist(candidates, X)
+    if X is None:
+        X = np.array([])
         
-        # Find the candidate with the maximum of the minimum distances
-        min_distances = np.min(D, axis=1)
-        max_min_distance_idx = np.argmax(min_distances)
-        
-        # Append the selected candidate to the design
-        X = np.vstack([X, candidates[max_min_distance_idx]])
-
-    # Ensure the output has exactly N points
+    for n in range(N):
+        if len(X) == 0:
+            X = np.random.rand(1, d)
+        else:
+            candidates = np.random.rand(N, d)
+            D = cdist(candidates, X)
+            min_distances = np.min(D, axis=1)
+            max_min_distance_idx = np.argmax(min_distances)
+            X = np.vstack([X, candidates[max_min_distance_idx]])
+    
+    # Take the last N points
     return X[-N:]
+
+if __name__ == "__main__":
+    X = maxmin_design(10, 2)
+    print("X.shape", X.shape)

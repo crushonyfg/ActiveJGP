@@ -1,6 +1,10 @@
 import numpy as np
 import random
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from simulate_case_d_linear import simulate_case_d_linear
 from ActiveJGP import ActiveJGP
 from plotResults import plotResults
@@ -9,6 +13,8 @@ from standardGP import standardGP
 
 from scipy.spatial.distance import cdist
 import copy
+
+import matplotlib.pyplot as plt
 
 
 def run_main_simulation(d, N, Nt, Nc, S, outputfile):
@@ -48,7 +54,7 @@ def run_main_simulation(d, N, Nt, Nc, S, outputfile):
             if k in [0, 1, 2, 3]:
                 if k in [0, 2]:  # MIN_IMSPE or MAX_MSPE
                     _, criteria, _, var_changes, *_ = ActiveJGP(x_AL[k], y_AL[k], xc_s, method, logtheta,
-                                                            min(12, max(8, round((N + s) / 4))))
+                                                            min(12, max(8, round((N + s-1) / 4))))
                 else:
                     criteria = var_changes
             elif k == 4:  # ALC with GP
@@ -61,7 +67,7 @@ def run_main_simulation(d, N, Nt, Nc, S, outputfile):
             # Make predictions at test points
             if k in [0, 1, 2, 3, 5]:
                 _, _, _, _, pred_value, _, pred_var_value, _ = ActiveJGP(x_AL[k], y_AL[k], xt, 'MAX_MSPE', logtheta,
-                                                                  min(12, max(8, round((N + s) / 4))))
+                                                                  min(12, max(8, round((N + s-1) / 4))))
             else:
                 pred_value, pred_var_value, _ = standardGP(x_AL[k], y_AL[k], xt, logtheta)
             
@@ -91,7 +97,20 @@ def run_main_simulation(d, N, Nt, Nc, S, outputfile):
                      x_AL=x_AL, y_AL=y_AL, xt=xt, yt=yt, xc=xc, yc=yc)
 
         # Plot results (if a function like `plotResults` is defined)
-        plotResults(rmse)
-        # plt.pause(0.1)
+        # if s%10 == 1:
+        #     plotResults(rmse)
+        #     plt.close()
+
+    plotResults(rmse, save=True)
+    plt.close()
 
     return pred, pred_var,mse, rmse, nlpd, x_AL, y_AL, xt, yt, xc, yc
+
+if __name__ == "__main__":
+    d=2
+    N=20*d
+    Nt=100
+    Nc=100
+    S=20
+    outputfile='output.npz'
+    run_main_simulation(d=d, N=N, Nt=Nt, Nc=Nc, S=S, outputfile=outputfile)

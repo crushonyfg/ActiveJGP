@@ -1,7 +1,11 @@
 import numpy as np
 from scipy.linalg import cholesky
 
-from JumpGP_code_py.calculate_gx import calculate_gx
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from JumpGaussianProcess.calculate_gx import calculate_gx
 
 
 def calculate_bias_and_variance(model, xt_j, logtheta=None):
@@ -31,12 +35,15 @@ def calculate_bias_and_variance(model, xt_j, logtheta=None):
     # Compute `gx` using a function like `calculate_gx`, which you would define based on `model['w']`
     gx, _ = calculate_gx(xt_j, model['w'])
     prior_z = 1 / (1 + np.exp(-0.05 * model['nw'] * gx))
+    # print("prior_z.shape", prior_z.shape)
 
     # Covariance matrices and Cholesky decomposition
     r1 = model['r'].flatten() # for model['r'] shape (N,1)
     K = model['cv'][0](model['cv'][1], logtheta, x_j[r1, :])
     Ktt, Kt = model['cv'][0](model['cv'][1], logtheta, x_j[r1, :], xt_j)
+    K += 1e-6 * np.eye(K.shape[0])
     L = cholesky(K, lower=True)
+    # print("prior_z.shape", prior_z.shape, "x[r].shape", x_j[r1,:].shape)
     
     # Check model properties and calculate RR_1
     k = len(model['r'])
@@ -70,15 +77,38 @@ def calculate_bias_and_variance(model, xt_j, logtheta=None):
     b2 = beta_before * (1 - gamma_before)
     ab1 = np.outer(a1, b1)
     ab2 = np.outer(a2, b2)
+    # print("a1.shape", a1.shape, "b1.shape", b1.shape, "ab1.shape", ab1.shape)
 
-    bias = np.sum(-a1) * gamma_s - np.sum(a2) * (1 - gamma_s) - np.sum(ab1) + np.sum(ab2)
-    parts = [np.sum(a1) * gamma_s, -np.sum(a2) * (1 - gamma_s), -np.sum(ab1), np.sum(ab2), RR_1]
+    bias = np.sum(-a1) * gamma_s - np.sum(a2) * (1 - gamma_s) - np.sum(ab1.flatten()) + np.sum(ab2.flatten())
+    parts = [np.sum(a1) * gamma_s, -np.sum(a2) * (1 - gamma_s), -np.sum(ab1.flatten()), np.sum(ab2.flatten()), RR_1]
     parts = np.array([x.item() if hasattr(x, 'item') else x for x in parts])
     bias *= RR_1
     bias2 = bias ** 2
 
     # Variance calculation
     LK = np.linalg.solve(L, Kt)
-    var = Ktt - np.sum(LK ** 2)
+    # var = Ktt - np.sum(LK ** 2)
+    var = Ktt - np.sum(LK ** 2, axis=0)   # 对应 MATLAB “每列平方后求和”
+    # print("var.shape", var.shape)
+
     
     return bias2.item(), var.item(), bias.item(), parts.reshape(-1,1)
+
+if __name__ == "__main__":
+    # 随便造点测试一下
+    from JumpGaussianProcess.JumpGP_LD import JumpGP_LD
+    from JumpGaussianProcess.cov.covSum import covSum
+    from JumpGaussianProcess.cov.covSEard import covSEard
+    from JumpGaussianProcess.cov.covNoise import covNoise
+    np.random.seed(0)       
+    cv = [covSum, [covSEard, covNoise]]              # 第二项 None，代表 covFunc 不需要额外参数
+
+    x = np.random.randn(20, 2)
+    y = np.random.randn(20, 1)
+    xt = np.random.randn(1, 2)
+    logtheta = np.random.randn(4)
+
+    mu_t, sig2_t, model, h = JumpGP_LD(x, y, xt, 'CEM', False)
+    res = calculate_bias_and_variance(model, xt, logtheta=None)
+
+    print("result:", res)

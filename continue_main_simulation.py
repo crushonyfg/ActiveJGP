@@ -4,7 +4,7 @@ from scipy.spatial.distance import cdist
 
 from calcALC import calcALC
 from ActiveJGP import ActiveJGP
-from standardGP import standardGP
+from JumpGP.LocalGP import standardGP
 
 def continue_main_simulation(pred, pred_var, mse, rmse, nlpd, x_AL, y_AL, xt, yt, xc, yc, S, decfunc, outputfile):
     """
@@ -24,7 +24,7 @@ def continue_main_simulation(pred, pred_var, mse, rmse, nlpd, x_AL, y_AL, xt, yt
     step = 0.005
     N = x_AL[0].shape[0] - Sinit
 
-    for s in range(Sinit, Sinit + S):
+    for s in range(Sinit+1, Sinit + S+1):
         for k, method in enumerate(methods):
             xc_ind = random.sample(range(xc.shape[0]), round(xc.shape[0] * 0.2))
             xc_s = xc[xc_ind, :]
@@ -33,7 +33,7 @@ def continue_main_simulation(pred, pred_var, mse, rmse, nlpd, x_AL, y_AL, xt, yt
             # Calculate selection criteria
             if k in {0, 1, 2, 3}:
                 if k in {0, 2}:  # MIN_IMSPE or MAX_MSPE
-                    _, criteria, _, _ = ActiveJGP(x_AL[k], y_AL[k], xc_s, method, logtheta, min(12, max(8, round((N + s - 1) / 4))))
+                    _, criteria, bias2_changes, var_changes, _, _, _ = ActiveJGP(x_AL[k], y_AL[k], xc_s, method, logtheta, min(12, max(8, round((N + s - 1) / 4))))
                 else:
                     criteria = var_changes
             elif k == 4:  # GP_ALC

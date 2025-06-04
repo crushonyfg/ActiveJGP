@@ -1,9 +1,13 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 
-from JumpGP_code_py.cov.covSum import covSum
-from JumpGP_code_py.cov.covSEard import covSEard
-from JumpGP_code_py.cov.covNoise import covNoise
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from JumpGaussianProcess.cov.covSum import covSum
+from JumpGaussianProcess.cov.covSEard import covSEard
+from JumpGaussianProcess.cov.covNoise import covNoise
 
 from maxmin_design import maxmin_design
 
@@ -27,58 +31,69 @@ def simulate_case_d_linear(d, sig, N, Nt, Nc):
     cv: Covariance function settings
     """
     # Define random weights and bounds
-    idx = np.random.permutation(d)
-    c = np.random.randint(d)
+    id = np.argsort(np.random.rand(d))  # Equivalent to MATLAB's [~, id] = sort(rand(d,1))
+    c = np.random.randint(1, d+1)  # MATLAB's randi(d)
     a = np.ones(d)
-    a[idx[:c]] = -1
+    a[id[:c]] = -1
 
-    # Generate test points and design matrix
-    xt = maxmin_design(Nt, d) - 0.5
+    # Generate test points using maxmin_design
+    xt = maxmin_design(Nt, d, None) - 0.5
     D = xt @ a
     xb = xt[np.abs(D) <= 0.1, :]
 
-    # Training and candidate locations
-    x = maxmin_design(N, d) - 0.5
+    # Generate training and candidate points
+    x = maxmin_design(N, d, None)
     xc = maxmin_design(Nc, d, x) - 0.5
+    x = x - 0.5
 
-    # Concatenate all points and define ground truth labels
+    # Concatenate all points and compute labels
     xall = np.vstack((x, xt, xc))
     g = xall @ a
     lbl_all = g <= 0
     Nall = N + Nt + Nc
     func = lambda x: x @ a <= 0
 
-    # Define covariance function and hyperparameters for response generation
+    # Define covariance function and hyperparameters
     cv = [covSum, [covSEard, covNoise]]
     logtheta_d = np.zeros(d + 2)
     logtheta_d[:d] = np.log(0.1 * (d / 2))
     logtheta_d[d] = np.log(np.sqrt(9))
     logtheta_d[d + 1] = -30
 
-    # Generate responses for each class based on GP prior
+    # Generate responses for each class
     yall = np.zeros(Nall)
     unique_labels = np.unique(lbl_all)
-    for m, label in enumerate(unique_labels):
+    for m, label in enumerate(unique_labels, 1):  # Start enumeration from 1 to match MATLAB
         lbl_m = lbl_all == label
-        lv = round((m + 1) / 2) * 13
-        lv = -lv if m % 2 == 0 else lv
+        lv = round(m / 2) * 13
+        if m % 2 == 1:
+            lv = -lv
         xm = xall[lbl_m, :]
-        K = cv[0](cv[1], logtheta_d, xm)  # Define covSum function separately
-        yall[lbl_m] = multivariate_normal.rvs(mean=lv * np.ones(sum(lbl_m)), cov=K)
+        K = cv[0](cv[1], logtheta_d, xm)
+        yall[lbl_m] = multivariate_normal.rvs(mean=lv * np.ones(np.sum(lbl_m)), cov=K)
 
-    # Separate into training, test, and candidate sets
+    # Split data and add noise
     y = yall[:N] + np.random.normal(0, sig, N)
     yt = yall[N:N+Nt]
     yc = yall[N+Nt:] + np.random.normal(0, sig, Nc)
 
     # Normalize responses
     mean_y = np.mean(y)
-    y -= mean_y
-    yt -= mean_y
-    yc -= mean_y
+    y = y - mean_y
+    yt = yt - mean_y
+    yc = yc - mean_y
 
-    # Adjust logtheta for noisy response
-    logtheta_d[-1] = np.log(sig)
-    logtheta = logtheta_d
+    # Set final logtheta
+    logtheta = logtheta_d.copy()
+    logtheta[-1] = np.log(sig)
 
-    return x, y.reshape(-1,1), xc, yc.reshape(-1,1), xt, yt.reshape(-1,1), func, logtheta, cv
+    # Reshape outputs to match MATLAB's column vectors
+    y = y.reshape(-1, 1)
+    yt = yt.reshape(-1, 1)
+    yc = yc.reshape(-1, 1)
+
+    return x, y, xc, yc, xt, yt, func, logtheta, cv
+
+if __name__ == "__main__":
+    x, y, xc, yc, xt, yt, func, logtheta, cv = simulate_case_d_linear(2, 0.1, 10, 5, 10)
+    print("x.shape", x.shape, "y.shape", y.shape, "xc.shape", xc.shape, "yc.shape", yc.shape, "xt.shape", xt.shape, "yt.shape", yt.shape)
