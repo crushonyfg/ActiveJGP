@@ -4,7 +4,7 @@ from scipy.spatial.distance import cdist
 
 from calcALC import calcALC
 from ActiveJGP import ActiveJGP
-from JumpGP.LocalGP import standardGP
+from LocalGP import standardGP
 
 def continue_main_simulation(pred, pred_var, mse, rmse, nlpd, x_AL, y_AL, xt, yt, xc, yc, S, decfunc, outputfile):
     """

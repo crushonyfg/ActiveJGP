@@ -64,7 +64,7 @@ if __name__ == "__main__":
     from JumpGaussianProcess.cov.covNoise import covNoise
 
     np.random.seed(0)       
-    cv = [covSum, [covSEard, covNoise]]              # 第二项 None，代表 covFunc 不需要额外参数
+    cv = [covSum, [covSEard, covNoise]]             
 
     x = np.random.randn(20, 2)
     y = np.random.randn(20, 1)

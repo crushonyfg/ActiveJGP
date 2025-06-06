@@ -65,11 +65,11 @@ def calcALC_parallel(x, xref, cv, logtheta, n_jobs=-1):
 if __name__ == "__main__":
     # 随便造点测试一下
     np.random.seed(0)
-    x = np.random.randn(50, 3)         # 50 个训练点，3 维
-    xref = np.random.randn(20, 3)      # 20 个候选点，3 维
-    logtheta = np.random.randn(5)        # 例如仅一个长度参数
-    cv = [covSum, [covSEard, covNoise]]              # 第二项 None，代表 covFunc 不需要额外参数
+    x = np.random.randn(50, 3)         # 50 training points, 3 dimensions
+    xref = np.random.randn(20, 3)      # 20 candidate points, 3 dimensions
+    logtheta = np.random.randn(5)        # length 3+2
+    cv = [covSum, [covSEard, covNoise]]             
 
-    # 并行计算
+    # parallel computation
     alc_values = calcALC_parallel(x, xref, cv, logtheta, n_jobs=4)
     print("ALC:", alc_values)

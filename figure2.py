@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .simulate_case import simulate_case  # Assuming you have this implemented based on your earlier MATLAB code
+from JumpGaussianProcess.simulate_case import simulate_case  # Assuming you have this implemented based on your earlier MATLAB code
 
 # Data generation
 percent_train = 0.7

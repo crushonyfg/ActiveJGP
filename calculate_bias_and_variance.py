@@ -88,20 +88,19 @@ def calculate_bias_and_variance(model, xt_j, logtheta=None):
     # Variance calculation
     LK = np.linalg.solve(L, Kt)
     # var = Ktt - np.sum(LK ** 2)
-    var = Ktt - np.sum(LK ** 2, axis=0)   # 对应 MATLAB “每列平方后求和”
+    var = Ktt - np.sum(LK ** 2, axis=0)  
     # print("var.shape", var.shape)
 
     
     return bias2.item(), var.item(), bias.item(), parts.reshape(-1,1)
 
 if __name__ == "__main__":
-    # 随便造点测试一下
     from JumpGaussianProcess.JumpGP_LD import JumpGP_LD
     from JumpGaussianProcess.cov.covSum import covSum
     from JumpGaussianProcess.cov.covSEard import covSEard
     from JumpGaussianProcess.cov.covNoise import covNoise
     np.random.seed(0)       
-    cv = [covSum, [covSEard, covNoise]]              # 第二项 None，代表 covFunc 不需要额外参数
+    cv = [covSum, [covSEard, covNoise]]             
 
     x = np.random.randn(20, 2)
     y = np.random.randn(20, 1)
