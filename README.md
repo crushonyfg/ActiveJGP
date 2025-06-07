@@ -19,6 +19,43 @@ pip install -r requirements.txt
 
 This class provides a simple interface for active learning using various Gaussian Process-based methods, implementing the algorithms from the paper "Active Learning of Piecewise Gaussian Process Surrogates" (Park et al., 2023).
 
+## Installation and Import
+
+### Option 1: If using in the same directory
+```python
+from ActiveLearner import ActiveLearner
+```
+
+### Option 2: If using from another directory
+First, you need to add the ActiveJGP directory to your Python path. There are several ways to do this:
+
+1. **Add path in your code** (Recommended):
+```python
+import sys
+import os
+sys.path.append("path/to/ActiveJGP")  # Replace with actual path to ActiveJGP folder
+from ActiveLearner import ActiveLearner
+```
+
+2. **Using relative path**:
+```python
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(os.path.join(parent_dir, 'ActiveJGP'))
+from ActiveLearner import ActiveLearner
+```
+
+3. **Set PYTHONPATH environment variable**:
+```bash
+# Windows
+set PYTHONPATH=%PYTHONPATH%;path/to/ActiveJGP
+
+# Linux/Mac
+export PYTHONPATH=$PYTHONPATH:path/to/ActiveJGP
+```
+
 ## Quick Start
 
 ```python
