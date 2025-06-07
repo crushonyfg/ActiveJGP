@@ -15,6 +15,140 @@ git clone https://github.com/crushonyfg/JumpGaussianProcess.git
 pip install -r requirements.txt
 ```
 
+# ActiveLearner: A Simple Interface for Active Learning with Gaussian Processes
+
+This class provides a simple interface for active learning using various Gaussian Process-based methods, implementing the algorithms from the paper "Active Learning of Piecewise Gaussian Process Surrogates" (Park et al., 2023).
+
+## Quick Start
+
+```python
+from ActiveLearner import ActiveLearner
+import numpy as np
+
+# Initialize your data
+x_train = ...  # Initial training features (N x d)
+y_train = ...  # Initial training labels (N x 1)
+x_candidates = ...  # Candidate points (Nc x d)
+y_candidates = ...  # Candidate labels (Nc x 1)
+x_test = ...  # Test points (Nt x d)
+y_test = ...  # Test labels (Nt x 1)
+
+# Create and run the active learner
+learner = ActiveLearner(
+    x=x_train,
+    y=y_train,
+    xc=x_candidates,
+    yc=y_candidates,
+    xt=x_test,
+    yt=y_test,
+    method_name='MIN_IMSPE',  # Choose your method
+    S=20  # Number of iterations
+)
+
+results = learner.run()
+```
+
+## Available Methods
+
+The class supports seven different active learning methods:
+- `'MIN_IMSPE'`: Minimize Integrated Mean Square Prediction Error for JGP
+- `'MIN_ALC'`: Minimize Active Learning Cohn for JGP
+- `'MAX_MSPE'`: Maximize Mean Square Prediction Error for JGP
+- `'MAX_VAR'`: Maximize Variance for JGP
+- `'GP_ALC'`: Standard Gaussian Process with ALC
+- `'JGP_LHD'`: Jump GP with Latin Hypercube Design
+- `'GP_LHD'`: Standard Gaussian Process with Latin Hypercube Design
+
+## Parameters
+
+### Initialization Parameters
+- `x`: Initial training data features (N x d)
+- `y`: Initial training data labels (N x 1)
+- `xc`: Candidate points features (Nc x d)
+- `yc`: Candidate points labels (Nc x 1)
+- `xt`: Test points features (Nt x d)
+- `yt`: Test points labels (Nt x 1)
+- `method_name`: Active learning method name (one of the above methods)
+- `S`: Number of active learning iterations
+- `use_subsample`: Whether to use subsampling of candidate points (default: True)
+- `ratio`: Subsampling ratio if use_subsample is True (default: 0.2)
+- `logtheta`: Gaussian process hyperparameters (optional)
+- `cv`: Covariance function parameters (optional), default = [covSum, [covSEard, covNoise]]
+
+### Return Values
+The `run()` method returns a dictionary containing:
+```python
+{
+    'x_AL': Selected training points,
+    'y_AL': Labels of selected points,
+    'mse': Mean Square Error history,
+    'rmse': Root Mean Square Error history,
+    'nlpd': Negative Log Predictive Density history,
+    'predictions': Prediction history,
+    'prediction_variances': Prediction variance history
+}
+```
+
+## Example Usage
+
+```python
+import numpy as np
+from ActiveLearner import ActiveLearner
+from simulate_case_d_linear import simulate_case_d_linear
+
+# Generate synthetic data
+d = 2  # dimension
+N = 40  # initial points
+Nt = 100  # test points
+Nc = 100  # candidate points
+S = 20  # iterations
+
+# Simulate data
+x, y, xc, yc, xt, yt, _, logtheta, cv = simulate_case_d_linear(d, 2, N, Nt, Nc)
+
+# Create learner
+learner = ActiveLearner(
+    x=x,
+    y=y,
+    xc=xc,
+    yc=yc,
+    xt=xt,
+    yt=yt,
+    method_name='MIN_IMSPE',
+    S=S,
+    use_subsample=True,
+    ratio=0.2,
+    logtheta=logtheta,
+    cv=cv
+)
+
+# Run active learning
+results = learner.run()
+
+# Plot results
+import matplotlib.pyplot as plt
+plt.plot(results['rmse'])
+plt.xlabel('Iteration')
+plt.ylabel('RMSE')
+plt.title('Learning Progress')
+plt.show()
+```
+
+## Progress Tracking
+The class uses `tqdm` to show a progress bar during the active learning process, making it easy to monitor long-running experiments.
+
+## Notes
+- The implementation automatically handles data reshaping and formatting
+- Early stopping occurs if no valid points are found
+- Progress is displayed every 5 iterations by default
+- Results are automatically saved and can be used for further analysis
+
+## Dependencies
+- numpy
+- scipy
+- tqdm (for progress tracking)
+- matplotlib (for visualization)
+
 ## Results
 
 ![RMSE Comparison](test_rmse.png)

@@ -23,11 +23,11 @@ def plotResults(rmse, save=False):
     plt.ylabel('RMSE')
     plt.title('Cumulative Minimum RMSE Across Stages for Different Methods')
     plt.grid(True)
-    plt.show()
     if save:
         plt.savefig('rmse.png')
+    plt.show()
     plt.pause(0.1)
-    # plt.close()
+    plt.close()
 
 if __name__ == "__main__":
     import numpy as np
